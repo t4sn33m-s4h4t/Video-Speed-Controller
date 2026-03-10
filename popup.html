@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Video Speed Controller</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0f0f12;
+      --surface:  #18181f;
+      --border:   #2a2a35;
+      --accent:   #6c63ff;
+      --accent2:  #a78bfa;
+      --text:     #e8e8f0;
+      --muted:    #8888a0;
+      --danger:   #ff5f5f;
+      --success:  #4ade80;
+    }
+
+    html { width: 320px; }
+
+    body {
+      width: 320px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, #1a1828 0%, #12121a 100%);
+      padding: 16px 18px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, #6c63ff, #a78bfa);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .logo svg { width: 18px; height: 18px; }
+    .header-text h1 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .header-text p {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .tab {
+      flex: 1;
+      padding: 9px 0;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      border: none;
+      background: none;
+      transition: color 0.15s, border-color 0.15s;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+    .tab.active { color: var(--accent2); border-bottom-color: var(--accent2); }
+    .tab:hover:not(.active) { color: var(--text); }
+
+    /* ── Panels ── */
+    .panel { display: none; padding: 16px 18px 18px; }
+    .panel.active { display: block; }
+
+    /* ── Speed display (big) ── */
+    .speed-hero {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .speed-label { font-size: 11px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
+    .speed-value {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent2);
+      letter-spacing: -0.02em;
+      min-width: 90px;
+      display: inline-block;
+    }
+    .speed-controls { display: flex; gap: 6px; }
+    .spd-btn {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      transition: background 0.13s, border-color 0.13s, transform 0.1s;
+    }
+    .spd-btn:hover  { background: var(--accent); border-color: var(--accent); transform: scale(1.08); }
+    .spd-btn:active { transform: scale(0.92); }
+    .spd-btn svg { width: 14px; height: 14px; }
+
+    /* ── Presets ── */
+    .section-label {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 8px;
+    }
+    .presets {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+    .preset-btn {
+      padding: 7px 4px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-family: 'Roboto Mono', monospace;
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.13s, border-color 0.13s, color 0.13s;
+    }
+    .preset-btn:hover { background: #25253a; border-color: var(--accent); }
+    .preset-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    /* ── Reset ── */
+    .reset-row { display: flex; justify-content: flex-end; margin-bottom: 4px; }
+    .reset-btn {
+      font-size: 11px;
+      color: var(--muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: color 0.13s, background 0.13s;
+    }
+    .reset-btn:hover { color: var(--danger); background: rgba(255,95,95,0.08); }
+
+    /* ── Settings panel ── */
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .setting-row:last-of-type { border-bottom: none; }
+    .setting-info strong { font-size: 12.5px; font-weight: 600; color: var(--text); display: block; }
+    .setting-info span   { font-size: 11px; color: var(--muted); }
+
+    .step-selector { display: flex; gap: 5px; }
+    .step-opt {
+      padding: 5px 9px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--muted);
+      font-family: 'Roboto Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.13s;
+    }
+    .step-opt:hover { border-color: var(--accent); color: var(--text); }
+    .step-opt.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    .save-indicator {
+      font-size: 11px;
+      color: var(--success);
+      text-align: center;
+      margin-top: 12px;
+      height: 16px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .save-indicator.show { opacity: 1; }
+
+    /* ── Help panel ── */
+    .help-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+    }
+    .help-block h3 {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent2);
+      margin-bottom: 8px;
+    }
+    .shortcut-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+    }
+    .shortcut-row:not(:last-child) { border-bottom: 1px solid var(--border); }
+    .shortcut-desc { font-size: 12px; color: var(--text); }
+    .keys { display: flex; gap: 4px; }
+    kbd {
+      background: #252530;
+      border: 1px solid #3a3a4a;
+      border-bottom-width: 2px;
+      border-radius: 5px;
+      padding: 2px 7px;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 11px;
+      color: var(--text);
+    }
+    .tip {
+      font-size: 11.5px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .tip + .tip { margin-top: 6px; }
+    .tip strong { color: var(--text); }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="4,5 16,12 4,19" fill="white"/>
+      <rect x="18" y="5" width="3" height="14" rx="1.5" fill="#a78bfa"/>
+    </svg>
+  </div>
+  <div class="header-text">
+    <h1>Video Speed Controller</h1>
+    <p>Any site · All videos</p>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-tab="speed">Speed</button>
+  <button class="tab" data-tab="settings">Settings</button>
+  <button class="tab" data-tab="help">Help</button>
+</div>
+
+<!-- SPEED TAB -->
+<div class="panel active" id="tab-speed">
+  <div class="speed-hero">
+    <div>
+      <div class="speed-label">Current Speed</div>
+      <div class="speed-value" id="speedDisplay">1x</div>
+    </div>
+    <div class="speed-controls">
+      <button class="spd-btn" id="btnDecrease" title="Decrease speed">
+        <svg viewBox="0 0 16 16" fill="none"><rect x="3" y="7.25" width="10" height="1.5" rx="0.75" fill="currentColor"/></svg>
+      </button>
+      <button class="spd-btn" id="btnIncrease" title="Increase speed">
+        <svg viewBox="0 0 16 16" fill="none"><rect x="3" y="7.25" width="10" height="1.5" rx="0.75" fill="currentColor"/><rect x="7.25" y="3" width="1.5" height="10" rx="0.75" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="section-label">Presets</div>
+  <div class="presets" id="presets">
+    <button class="preset-btn" data-speed="0.5">0.5x</button>
+    <button class="preset-btn" data-speed="0.75">0.75x</button>
+    <button class="preset-btn active" data-speed="1">1x</button>
+    <button class="preset-btn" data-speed="1.25">1.25x</button>
+    <button class="preset-btn" data-speed="1.5">1.5x</button>
+    <button class="preset-btn" data-speed="1.75">1.75x</button>
+    <button class="preset-btn" data-speed="2">2x</button>
+    <button class="preset-btn" data-speed="3">3x</button>
+  </div>
+
+  <div class="reset-row">
+    <button class="reset-btn" id="btnReset">↺ Reset to 1x</button>
+  </div>
+</div>
+
+<!-- SETTINGS TAB -->
+<div class="panel" id="tab-settings">
+  <div class="setting-row">
+    <div class="setting-info">
+      <strong>Speed Step</strong>
+      <span>How much each key press changes speed</span>
+    </div>
+    <div class="step-selector" id="stepSelector">
+      <button class="step-opt" data-step="0.1">0.1x</button>
+      <button class="step-opt active" data-step="0.25">0.25x</button>
+      <button class="step-opt" data-step="0.5">0.5x</button>
+      <button class="step-opt" data-step="1">1x</button>
+    </div>
+  </div>
+
+  <div class="save-indicator" id="saveIndicator">✓ Settings saved</div>
+</div>
+
+<!-- HELP TAB -->
+<div class="panel" id="tab-help">
+  <div class="help-block">
+    <h3>⌨ Keyboard Shortcuts</h3>
+    <div class="shortcut-row">
+      <span class="shortcut-desc">Slow down</span>
+      <div class="keys"><kbd>Shift</kbd><kbd>Z</kbd></div>
+    </div>
+    <div class="shortcut-row">
+      <span class="shortcut-desc">Speed up</span>
+      <div class="keys"><kbd>Shift</kbd><kbd>X</kbd></div>
+    </div>
+    <div class="shortcut-row">
+      <span class="shortcut-desc">Reset to 1x</span>
+      <div class="keys"><kbd>Shift</kbd><kbd>R</kbd></div>
+    </div>
+  </div>
+
+  <div class="help-block">
+    <h3>🎬 On-Screen Overlay</h3>
+    <p class="tip">A <strong>− speed +</strong> bar appears near the bottom of every video. It's semi-transparent until you hover over it.</p>
+    <p class="tip">A <strong>speed badge</strong> flashes in the top-left corner of the video whenever speed changes.</p>
+  </div>
+
+  <div class="help-block">
+    <h3>💡 Tips</h3>
+    <p class="tip">Speed is <strong>remembered across page reloads</strong> and sessions.</p>
+    <p class="tip">Works on <strong>all websites</strong> — YouTube, Netflix, Twitch, Vimeo, and any HTML5 video.</p>
+    <p class="tip">Speed range: <strong>0.25x → 16x</strong>.</p>
+  </div>
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>
