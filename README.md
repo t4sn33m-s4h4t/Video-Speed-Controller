@@ -13,7 +13,7 @@
 
 ### Direct Download
 
-1. **[⬇ Download the latest ZIP](https://github.com/YOUR_USERNAME/video-speed-controller/releases/latest/download/video-speed-controller.zip)**
+1. **[⬇ Download the latest ZIP](https://github.com/t4sn33m-s4h4t/Video-Speed-Controller/raw/refs/heads/main/video%20speed%20controller.zip)**
 2. Unzip the file
 3. Open Chrome → go to `chrome://extensions/`  
    *(Edge: `edge://extensions/`)*
